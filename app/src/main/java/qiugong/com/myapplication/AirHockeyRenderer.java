@@ -3,6 +3,7 @@ package qiugong.com.myapplication;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -27,6 +28,7 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
 
     private static final String A_COLOR = "a_Color";
     private static final String A_POSITION = "a_Position";
+    private static final String U_MATRIX = "u_Matrix";
 
     private FloatBuffer vertexData;
     private Context context;
@@ -34,6 +36,8 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
     private int program;
     private int aColorLocation;
     private int aPositionLocation;
+    private final float[] projectionMatrix = new float[16];
+    private int uMatrixLocation;
 
     AirHockeyRenderer(Context context) {
         this.context = context;
@@ -43,19 +47,19 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
 
                 // Triangle Fan
                 0f, 0f, 1f, 1f, 1f,
-                -0.5f, -0.5f, 0.5f, 0.5f, 0.5f,
-                0.5f, -0.5f, 0.5f, 0.5f, 0.5f,
-                0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
-                -0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
-                -0.5f, -0.5f, 0.5f, 0.5f, 0.5f,
+                -0.5f, -0.8f, 0.5f, 0.5f, 0.5f,
+                0.5f, -0.8f, 0.5f, 0.5f, 0.5f,
+                0.5f, 0.8f, 0.5f, 0.5f, 0.5f,
+                -0.5f, 0.8f, 0.5f, 0.5f, 0.5f,
+                -0.5f, -0.8f, 0.5f, 0.5f, 0.5f,
 
                 // Line 1
                 -0.5f, 0f, 1f, 0f, 0f,
                 0.5f, 0f, 1f, 0f, 0f,
 
                 // Mallets
-                0f, -0.25f, 0f, 0f, 1f,
-                0f, 0.25f, 1f, 0f, 0f
+                0f, -0.4f, 0f, 0f, 1f,
+                0f, 0.4f, 1f, 0f, 0f
         };
 
         vertexData = ByteBuffer
@@ -83,6 +87,7 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
 
         aPositionLocation = GLES20.glGetAttribLocation(program, A_POSITION);
         aColorLocation = GLES20.glGetAttribLocation(program, A_COLOR);
+        uMatrixLocation = GLES20.glGetUniformLocation(program, U_MATRIX);
 
         vertexData.position(0);
         GLES20.glVertexAttribPointer(aPositionLocation, POSITION_COMPONENT_COUNT, GLES20.GL_FLOAT, false, STRIDE, vertexData);
@@ -96,11 +101,31 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
+
+        final float aspectRatio = width > height
+                ? (float) width / (float) height
+                : (float) height / (float) width;
+
+        if (width > height) {
+            // 横屏
+            Matrix.orthoM(projectionMatrix, 0,
+                    -aspectRatio, aspectRatio,
+                    -1f, 1f,
+                    -1f, 1f);
+        } else {
+            // 竖屏
+            Matrix.orthoM(projectionMatrix, 0,
+                    -1f, 1f,
+                    -aspectRatio, aspectRatio,
+                    -1f, 1f);
+        }
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+        GLES20.glUniformMatrix4fv(uMatrixLocation, 1, false, projectionMatrix, 0);
 
         // 绘制桌子
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 6);
