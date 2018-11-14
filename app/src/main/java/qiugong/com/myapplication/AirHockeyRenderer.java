@@ -13,6 +13,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import qiugong.com.myapplication.util.LoggerConfig;
+import qiugong.com.myapplication.util.MatrixHelper;
 import qiugong.com.myapplication.util.ShaderHelper;
 import qiugong.com.myapplication.util.TextResourceReader;
 
@@ -37,6 +38,7 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
     private int aColorLocation;
     private int aPositionLocation;
     private final float[] projectionMatrix = new float[16];
+    private final float[] modelMatrix = new float[16];
     private int uMatrixLocation;
 
     AirHockeyRenderer(Context context) {
@@ -102,23 +104,23 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
 
-        final float aspectRatio = width > height
-                ? (float) width / (float) height
-                : (float) height / (float) width;
+        // 透视投影矩阵
+        MatrixHelper.perspectiveM(projectionMatrix, 45,
+                (float) width / (float) height, 1f, 10f);
 
-        if (width > height) {
-            // 横屏
-            Matrix.orthoM(projectionMatrix, 0,
-                    -aspectRatio, aspectRatio,
-                    -1f, 1f,
-                    -1f, 1f);
-        } else {
-            // 竖屏
-            Matrix.orthoM(projectionMatrix, 0,
-                    -1f, 1f,
-                    -aspectRatio, aspectRatio,
-                    -1f, 1f);
-        }
+        // 沿着Z平移3f
+        // (-1.1 < x < 1.1)
+        // (-2.1 < y < 2.1)
+        // (-1 < z <= -10)
+        Matrix.setIdentityM(modelMatrix, 0);
+        Matrix.translateM(modelMatrix, 0, 0f, 0f, -3f);
+
+        // 旋转
+        Matrix.rotateM(modelMatrix, 0, 5f, 0, 0, 1);
+
+        final float[] temp = new float[16];
+        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
+        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
     }
 
     @Override
