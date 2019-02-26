@@ -14,6 +14,7 @@ import qiugong.com.myapplication.objects.ParticleSystem;
 import qiugong.com.myapplication.programs.ParticleShaderProgram;
 import qiugong.com.myapplication.util.Geometry;
 import qiugong.com.myapplication.util.MatrixHelper;
+import qiugong.com.myapplication.util.TextureHelper;
 
 /**
  * @author qzx 2018/11/2.
@@ -33,6 +34,7 @@ class ParticlesRenderer implements GLSurfaceView.Renderer {
     private ParticleShooter blueParticleShooter;
 
     private long globalStartTime;
+    private int texture;
 
     public ParticlesRenderer(Context context) {
         this.context = context;
@@ -41,6 +43,9 @@ class ParticlesRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
 
         particleProgram = new ParticleShaderProgram(context);
         particleSystem = new ParticleSystem(10_000);
@@ -70,6 +75,8 @@ class ParticlesRenderer implements GLSurfaceView.Renderer {
                 Color.rgb(5, 50, 255),
                 angleVarianceInDegrees,
                 speedVariance);
+
+        texture = TextureHelper.loadTexture(context, R.drawable.particle_texture);
     }
 
     @Override
@@ -93,7 +100,7 @@ class ParticlesRenderer implements GLSurfaceView.Renderer {
         blueParticleShooter.addParticles(particleSystem, currentTime, 5);
 
         particleProgram.useProgram();
-        particleProgram.setUniforms(viewProjectionMatrix, currentTime);
+        particleProgram.setUniforms(viewProjectionMatrix, currentTime, texture);
         particleSystem.bindData(particleProgram);
         particleSystem.draw();
     }
