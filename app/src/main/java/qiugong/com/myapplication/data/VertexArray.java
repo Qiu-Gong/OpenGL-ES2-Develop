@@ -23,15 +23,20 @@ public class VertexArray {
                 .put(vertexData);
     }
 
-    public void setVertexAttribPointer(int dataOffset, int attributeLocation,
-                                       int componentCount, int stride) {
+    public void setVertexAttribPointer(int dataOffset, int attributeLocation, int componentCount, int stride) {
         floatBuffer.position(dataOffset);
+
         // 配置读取顶点属性
-        GLES20.glVertexAttribPointer(attributeLocation, componentCount, GLES20.GL_FLOAT,
-                false, stride, floatBuffer);
+        GLES20.glVertexAttribPointer(attributeLocation, componentCount, GLES20.GL_FLOAT, false, stride, floatBuffer);
         // 使能顶点数组
         GLES20.glEnableVertexAttribArray(attributeLocation);
 
+        floatBuffer.position(0);
+    }
+
+    public void updateBuffer(float[] vertexData, int start, int count) {
+        floatBuffer.position(start);
+        floatBuffer.put(vertexData, start, count);
         floatBuffer.position(0);
     }
 }
