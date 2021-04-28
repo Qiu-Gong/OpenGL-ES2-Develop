@@ -12,6 +12,104 @@ typedef struct {
 
 } UserData;
 
+//void testGetUniformBlock(GLint programObj) {
+//    GLuint blockId, bufferId;
+//    GLint blockSize;
+//    GLuint bindingPoint = 1;
+//    GLfloat lightData[] = {
+//            1.0f, 0.0f, 0.0f, 0.0f,
+//            0.0f, 0.0f, 0.0f, 1.0f
+//    };
+//
+//    blockId = glGetUniformBlockIndex(programObj, "LightBlock");
+//    glUniformBlockBinding(programObj, blockId, bindingPoint);
+//    glGetActiveUniformBlockiv(programObj, blockId, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+//    glGenBuffers(1, &bufferId);
+//    glBindBuffer(GL_UNIFORM_BUFFER, bufferId);
+//    glBufferData(GL_UNIFORM_BUFFER, blockSize, lightData, GL_DYNAMIC_DRAW);
+//    glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, bufferId);
+//}
+
+void testGetActiveAttributes(GLint programObj) {
+    GLint maxUniformLen = 0;
+    GLint numUniforms = 0;
+    char *uniformName = NULL;
+    GLint index = 0;
+
+    glGetProgramiv(programObj, GL_ACTIVE_ATTRIBUTES, &numUniforms);
+    glGetProgramiv(programObj, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxUniformLen);
+
+    uniformName = malloc(sizeof(char) * maxUniformLen);
+    for (index = 0; index < numUniforms; index++) {
+        GLint size = 0;
+        GLenum type = 0;
+        GLint location = 0;
+
+        glGetActiveAttrib(programObj, index, maxUniformLen, NULL, &size, &type, uniformName);
+        location = glGetAttribLocation(programObj, uniformName);
+        esLogMessage("GetActiveAttributes: %s location:%d ", uniformName, location);
+        switch (type) {
+            case GL_FLOAT:
+                esLogMessage("type:float\n");
+                break;
+            case GL_FLOAT_VEC2:
+                esLogMessage("type:vec2\n");
+                break;
+            case GL_FLOAT_VEC3:
+                esLogMessage("type:vec3\n");
+                break;
+            case GL_FLOAT_VEC4:
+                esLogMessage("type:vec4\n");
+                break;
+            case GL_INT:
+                esLogMessage("type:int\n");
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void testGetActiveUniform(GLint programObj) {
+    GLint maxUniformLen;
+    GLint numUniforms;
+    char *uniformName;
+    GLint index;
+
+    glGetProgramiv(programObj, GL_ACTIVE_UNIFORMS, &numUniforms);
+    glGetProgramiv(programObj, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformLen);
+
+    uniformName = malloc(sizeof(char) * maxUniformLen);
+    for (index = 0; index < numUniforms; index++) {
+        GLint size;
+        GLenum type;
+        GLint location;
+
+        glGetActiveUniform(programObj, index, maxUniformLen, NULL, &size, &type, uniformName);
+        location = glGetUniformLocation(programObj, uniformName);
+        esLogMessage("GetActiveUniform: %s location:%d ", uniformName, location);
+        switch (type) {
+            case GL_FLOAT:
+                esLogMessage("type:float\n");
+                break;
+            case GL_FLOAT_VEC2:
+                esLogMessage("type:vec2\n");
+                break;
+            case GL_FLOAT_VEC3:
+                esLogMessage("type:vec3\n");
+                break;
+            case GL_FLOAT_VEC4:
+                esLogMessage("type:vec4\n");
+                break;
+            case GL_INT:
+                esLogMessage("type:int\n");
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 ///
 // Create a shader object, load the shader source, and
 // compile the shader.
@@ -66,6 +164,11 @@ int Init(ESContext *esContext) {
     char vShaderStr[] =
             "#version 300 es                          \n"
             "layout(location = 0) in vec4 vPosition;  \n"
+            "layout (std140) uniform LightBlock       \n"
+            "{                                        \n"
+            "   vec3 lightDirection;                  \n"
+            "   vec4 lightPosition;                   \n"
+            "};                                       \n"
             "void main()                              \n"
             "{                                        \n"
             "   gl_Position = vPosition;              \n"
@@ -104,7 +207,8 @@ int Init(ESContext *esContext) {
 
     // Check the link status
     glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
-
+    testGetActiveAttributes(programObject);
+    testGetActiveUniform(programObject);
     if (!linked) {
         GLint infoLen = 0;
 
