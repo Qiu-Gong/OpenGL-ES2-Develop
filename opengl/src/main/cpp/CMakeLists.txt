@@ -14,7 +14,9 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_o
 add_library(native-activity SHARED
         common/esUtil_Android.c
         common/esUtil.c
-        lsn02/Hello_Triangle.c
+        common/esShader.c
+#        lsn02/Hello_Triangle.c
+        lsn06/E6_3.cpp
         )
 
 target_include_directories(native-activity PRIVATE
