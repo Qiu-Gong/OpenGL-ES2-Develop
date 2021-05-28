@@ -69,6 +69,22 @@ void Shutdown(ESContext *esContext) {
     glDeleteProgram(userData->programObject);
 }
 
+typedef void *vertex_t;
+
+void initVertexBufferObjects(vertex_t *vertexBuffer,
+                             GLushort *indices,
+                             GLuint numVertices,
+                             GLuint numIndices,
+                             GLuint *vboIds) {
+    glGenBuffers(2, vboIds);
+    // 保存实际的顶点属性数据（数组缓冲区）
+    glBindBuffer(GL_ARRAY_BUFFER, vboIds[0]);
+    glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(vertex_t), vertexBuffer, GL_STATIC_DRAW);
+    // 保存组成图元的元素索引（元素数组缓冲区对象）
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[1]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(GLushort), indices, GL_STATIC_DRAW);
+}
+
 extern "C" {
 int esMain(ESContext *esContext) {
     esContext->userData = malloc(sizeof(UserData));

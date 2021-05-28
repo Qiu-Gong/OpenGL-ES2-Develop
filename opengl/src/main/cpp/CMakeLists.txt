@@ -16,7 +16,8 @@ add_library(native-activity SHARED
         common/esUtil.c
         common/esShader.c
 #        lsn02/Hello_Triangle.c
-        lsn06/E6_3.cpp
+#        lsn06/E6_3.cpp
+        lsn06/E6_3_vertex_buffer.cpp
         )
 
 target_include_directories(native-activity PRIVATE
